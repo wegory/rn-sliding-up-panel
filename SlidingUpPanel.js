@@ -20,6 +20,7 @@ import FlickAnimation from './libs/FlickAnimation'
 import {statusBarHeight, visibleHeight} from './libs/layout'
 import * as Constants from './libs/constants'
 import styles from './libs/styles'
+import { moderateScale } from '../../src/styles'
 
 const keyboardShowEvent = Platform.select({
   android: 'keyboardDidShow',
@@ -228,6 +229,7 @@ class SlidingUpPanel extends React.PureComponent {
     }
 
     if (this.props.snappingPoints.length > 0) {
+      
       this.props.onMomentumDragStart(animatedValue)
 
       const {top, bottom} = this.props.draggableRange
@@ -255,7 +257,7 @@ class SlidingUpPanel extends React.PureComponent {
       })
       return true
     }
-
+  
     if (Math.abs(gestureState.vy) > this.props.minimumVelocityThreshold) {
       this.props.onMomentumDragStart(animatedValue)
 
@@ -312,9 +314,7 @@ class SlidingUpPanel extends React.PureComponent {
 
     this._storeKeyboardPosition(event.endCoordinates.screenY)
 
-    const node = TextInput.State.currentlyFocusedField
-      ? TextInput.State.currentlyFocusedField()
-      : findNodeHandler(TextInput.State.currentlyFocusedInput());
+    const node = TextInput.State.currentlyFocusedField()
 
     if (node != null) {
       UIManager.viewIsDescendantOf(node, findNodeHandle(this._content), (isDescendant) => {
@@ -408,8 +408,8 @@ class SlidingUpPanel extends React.PureComponent {
         pointerEvents={this._backdropPointerEvents}
         ref={c => (this._backdrop = c)}
         onTouchStart={() => this._flick.stop()}
-        onTouchEnd={() => this.hide()}
-        style={[styles.backdrop, backdropStyle, {opacity: backdropOpacity}]}
+        // onTouchEnd={() => this.hide()}
+        style={[styles.backdrop, backdropStyle, {opacity: backdropOpacity, backgroundColor: "pink"}]}
       />
     )
   }
@@ -433,7 +433,7 @@ class SlidingUpPanel extends React.PureComponent {
       styles.animatedContainer,
       transform,
       containerStyle,
-      {height, bottom: -height}
+      {height: height + moderateScale(1000), bottom: -height - moderateScale(1000)}
     ]
 
     if (typeof this.props.children === 'function') {
@@ -443,7 +443,7 @@ class SlidingUpPanel extends React.PureComponent {
           pointerEvents="box-none"
           ref={c => (this._content = c)}
           style={animatedContainerStyles}>
-          {this.props.children(this._panResponder.panHandlers)}
+          {this.props.children()}
         </Animated.View>
       )
     }
@@ -453,15 +453,16 @@ class SlidingUpPanel extends React.PureComponent {
         key="content"
         pointerEvents="box-none"
         ref={c => (this._content = c)}
-        style={animatedContainerStyles}
-        {...this._panResponder.panHandlers}>
+        style={[animatedContainerStyles]}
+        {...this._panResponder.panHandlers}
+        >
         {this.props.children}
       </Animated.View>
     )
   }
 
   render() {
-    return [this._renderBackdrop(), this._renderContent()]
+    return [this._renderContent()]
   }
 
   show(mayBeValueOrOptions) {
@@ -478,8 +479,9 @@ class SlidingUpPanel extends React.PureComponent {
   }
 
   hide() {
-    const {bottom} = this.props.draggableRange
-    this._triggerAnimation({toValue: bottom})
+    // console.log("hide")
+    // const {bottom} = this.props.draggableRange
+    // this._triggerAnimation({toValue: bottom})
   }
 
   async scrollIntoView(node, options = {}) {
